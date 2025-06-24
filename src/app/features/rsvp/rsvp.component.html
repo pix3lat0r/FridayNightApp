@@ -1,0 +1,36 @@
+<h2 class="section-title">who's coming?</h2>
+<div class="add-guest">
+    <input type="text" [(ngModel)]="newGuestName" placeholder="Add someone" />
+    <button (click)="addGuest(newGuestName); newGuestName=''">
+        <span class="material-symbols-outlined">
+            person_add</span></button>
+</div>
+<table class="rsvp">
+    <thead>
+        <tr>
+            <th><span class="material-symbols-outlined">
+                list</span>name
+            </th>
+            <th><span class="material-symbols-outlined">
+                thumb_up</span>going?
+            </th>
+            <th class="less-padding"><span class="material-symbols-outlined">
+                delete</span>remove</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let guest of guests">
+            <td>{{ guest.name }}</td>
+            <td>
+                <select [(ngModel)]="guest.rsvp" 
+                        [ngClass]="'rsvp-select ' + guest.rsvp" 
+                        (change)="guestService.updateGuestRsvp(guest.id, guest.rsvp)">
+                    <option value="yes">yes</option>
+                    <option value="no">no</option>
+                    <option value="maybe">maybe</option>
+                </select>
+            </td>
+            <td class="less-padding"><button class="delete-cell gray-text point" (click)="confirmDelete(guest)">x</button></td>
+        </tr>
+    </tbody>
+</table>

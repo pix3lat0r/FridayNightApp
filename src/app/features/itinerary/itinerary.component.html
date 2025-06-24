@@ -1,0 +1,129 @@
+<h2 class="section-title">{{ isTodayFriday() ? "tonight's plan" : "friday night plan" }}</h2>
+<p class="subheading">
+    <ng-container *ngIf="isTodayFriday(); else showUpcoming">
+        today: {{ today | date: 'fullDate' }}
+    </ng-container>
+    <ng-template #showUpcoming>
+        upcoming: {{ upcomingFriday | date: 'fullDate' }}
+    </ng-template>
+</p>
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th class="time-column"><span class="material-symbols-outlined">
+                        schedule
+                    </span>time
+                </th>
+                <th><span class="material-symbols-outlined">
+                        emoji_objects
+                    </span>activity
+                </th>
+                <th><span class="material-symbols-outlined">
+                        location_on
+                    </span>location
+                </th>
+                <th class="remove-center"><span class="material-symbols-outlined">
+                        delete</span>remove</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of itinerary; let i = index">
+                <td class="time-column">
+                    <!-- <ng-container *ngIf="!editingField[i]?.['time']; else editTime">
+                    <span>{{ row.time }} </span>
+                    <span class="material-symbols-outlined icon-btn" (click)="startEditing(i, 'time')">
+                        stylus</span>
+                </ng-container>
+                <ng-template #editTime>
+                    <input [(ngModel)]="row.time" (blur)="stopEditing(i, 'time', row)" />
+                </ng-template> -->
+                    <ng-container *ngIf="editingField[i]?.['time']; else viewTime">
+                        <input class="auto-width-input" [(ngModel)]="itinerary[i].time"
+                            (blur)="stopEditing(i, 'time', row)" (keydown.enter)="stopEditing(i, 'time', row)"
+                            autofocus />
+                    </ng-container>
+                    <ng-template #viewTime>
+                        <span tabindex="0" (click)="startEditing(i, 'time')" (keydown.enter)="startEditing(i, 'time')"
+                            class="editable-cell pointer" [class.empty]="!row.activity">{{ row.time}}</span>
+                        <!-- <span class="material-symbols-outlined icon-btn">stylus</span> -->
+                    </ng-template>
+                </td>
+                <td>
+                    <!-- <ng-container *ngIf="!editingField[i]?.['activity']; else editActivity">
+                    <span>{{ row.activity }} </span>
+                    <span class="material-symbols-outlined icon-btn" (click)="startEditing(i, 'activity')">
+                        stylus</span>
+                </ng-container>
+                <ng-template #editActivity>
+                    <input [(ngModel)]="row.activity" (blur)="stopEditing(i, 'activity', row)" />
+                </ng-template> -->
+                    <ng-container *ngIf="editingField[i]?.['activity']; else viewActivity">
+                        <input class="auto-width-input" [(ngModel)]="itinerary[i].activity"
+                            (blur)="stopEditing(i, 'activity', row)" (keydown.enter)="stopEditing(i, 'activity', row)"
+                            autofocus />
+                    </ng-container>
+                    <ng-template #viewActivity>
+                        <span tabindex="0" (click)="startEditing(i, 'activity')"
+                            (keydown.enter)="startEditing(i, 'activity')" class="editable-cell pointer"
+                            [class.empty]="!row.activity">{{ row.activity || ''}}</span>
+                        <!-- <span class="material-symbols-outlined icon-btn">stylus</span> -->
+                    </ng-template>
+                </td>
+                <td>
+                    <!-- <ng-container *ngIf="!editingField[i]?.['location']; else editLocation">
+                    <span>{{ row.location }} </span>
+                    <span class="material-symbols-outlined icon-btn" (click)="startEditing(i, 'location')">
+                        stylus</span>
+                </ng-container>
+                <ng-template #editLocation>
+                    <input [(ngModel)]="row.location" (blur)="stopEditing(i, 'location', row)" />
+                </ng-template> -->
+                    <ng-container *ngIf="editingField[i]?.['location']; else viewLocation">
+                        <input class="auto-width-input" [(ngModel)]="itinerary[i].location"
+                            (blur)="stopEditing(i, 'location', row)" (keydown.enter)="stopEditing(i, 'location', row)"
+                            autofocus />
+                    </ng-container>
+                    <ng-template #viewLocation>
+                        <!-- <span class="material-symbols-outlined icon-btn" >stylus</span> -->
+                        <span tabindex="0" (click)="startEditing(i, 'location')"
+                            (keydown.enter)="startEditing(i, 'location')" class="editable-cell pointer"
+                            [class.empty]="!row.activity">{{ row.location || ''}}</span>
+                    </ng-template>
+                </td>
+                <td>
+                    <button class="delete-cell gray-text point" (click)="confirmDelete(i)">x</button>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr *ngIf="!showAddRow">
+                <td colspan="4">
+                    <!-- <button class="add-btn" (click)="showAddRow = true">+ add new row</button> -->
+                    <span class="material-symbols-outlined point gray-text" (click)="handleAddRowClick()">
+                        add</span><span class="gray-text point" (click)="handleAddRowClick()">add new row</span>
+                </td>
+            </tr>
+            <tr *ngIf="showAddRow">
+                <td>
+                    <input class="auto-width-input padded-time" [(ngModel)]="newRow.time"
+                        [size]="newRow.time.length || 4" (blur)="addRow(newRow)" (keydown.enter)="addRow(newRow)" />
+                </td>
+                <td><input class="auto-width-input padded-time" [(ngModel)]="newRow.activity"
+                        [size]="newRow.activity.length || 8" (blur)="addRow(newRow)" (keydown.enter)="addRow(newRow)" />
+                </td>
+                <td><input class="auto-width-input padded-time" [(ngModel)]="newRow.location"
+                        [size]="newRow.location.length || 8" (blur)="addRow(newRow)" (keydown.enter)="addRow(newRow)" />
+                </td>
+                <td>
+                    <button class="delete-cell gray-text point" (click)="cancelAddRow()">x</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<div class="reset-container" style="margin-top: 10px">
+    <span class="material-symbols-outlined gray-text point" (click)="handleResetItineraryClick()">
+        undo</span><span class="gray-text point" (click)="handleResetItineraryClick()">reset</span>
+</div>

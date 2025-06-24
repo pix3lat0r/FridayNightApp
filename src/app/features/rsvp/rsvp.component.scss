@@ -1,0 +1,127 @@
+.add-guest {
+    // display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+
+    input[type="text"] {
+        padding: 0.4rem 1rem;
+        border: 1px solid #ccc;
+        border-radius: 1.5rem;
+        background-color: #ffffff;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.9rem;
+        width: 175px;
+        outline: none;
+
+        &::placeholder {
+            color: #888;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+    }
+
+    button {
+        margin-left: 0.5rem;
+        padding: 0.4rem 0.9rem;
+        border: none;
+        border-radius: 1.5rem;
+        background-color: #e0e0e0;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.9rem;
+        min-width: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: #ccc;
+        }
+    }
+}
+
+.rsvp-select {
+    appearance: none;
+    padding: 0.1rem 0.1rem 0.1rem 1.5rem;
+    /* more left padding for the dot */
+    border: none;
+    border-radius: 1.5rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: 120px;
+    background-repeat: no-repeat;
+    background-position: 0.5rem 0.6rem;
+    background-size: 0.5rem 0.5rem;
+    line-height: 1.4rem;
+    width: 3.5rem;
+    //min-width: 4rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* yes */
+.rsvp-select.yes {
+    background-color: #d7f0d9;
+    /* pastel green */
+    color: #131312;
+    background-image: radial-gradient(circle, #4ca54c 60%, transparent 61%);
+    min-width: 4rem;
+    top: -2px;
+}
+
+/* no */
+.rsvp-select.no {
+    background-color: #f7d6d6;
+    /* pastel red */
+    color: #131312;
+    background-image: radial-gradient(circle, #d9534f 60%, transparent 61%);
+    min-width: 2rem;
+    /* "no" is shorter */
+    padding-right: 0.5rem;
+    /* reduce right padding */
+}
+
+/* maybe */
+.rsvp-select.maybe {
+    background-color: #fbf3da;
+    /* pastel yellow */
+    color: #131312;
+    background-image: radial-gradient(circle, #C29343 60%, transparent 61%);
+    min-width: 5rem;
+    /* longer word */
+    padding-right: 0.8rem;
+}
+
+.rsvp td:last-child {
+    text-align: center;
+}
+
+.delete-cell {
+    font-family: 'IBM Plex Mono', monospace !important;
+    margin-left: 20px;
+    text-align: center;
+}
+
+.less-padding {
+    padding-left: 0 !important;
+}
+
+/* table styling */
+table {
+    width: auto;
+    border-collapse: collapse;
+    // margin: 1rem 5rem;
+    margin: auto;
+
+    th,
+    td {
+        padding: 0.5rem 1.5rem;
+        border-bottom: 1px solid #ccc;
+        text-align: left;
+    }
+
+    button {
+        padding: 0.3rem 0.8rem;
+        border: none;
+        background-color: white;
+    }
+}
