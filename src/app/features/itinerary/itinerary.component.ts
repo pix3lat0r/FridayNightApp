@@ -1,43 +1,45 @@
-// can use OnInit when you need to fetch API, initialize dynamically
-// import { Component, OnInit } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { ItineraryService, ItineraryRow } from 'src/app/core/services/itinerary.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from 'src/app/shared/error-dialog/error-dialog.component';
 import { ConfirmDialogComponent } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-itinerary',
   templateUrl: './itinerary.component.html',
   styleUrls: ['./itinerary.component.scss']
 })
-
-// see above: 
-// export class ItineraryComponent implements OnInit {
 export class ItineraryComponent implements OnInit {
-
   today = new Date();
   upcomingFriday = this.getUpcomingFriday();
   itinerary: ItineraryRow[] = [];
   newRow: ItineraryRow = { time: '', activity: '', location: '' };
-  editingField: { [index: number]: { [key: string]: boolean } } = {};
+  editingField: { [id: string]: { [key: string]: boolean } } = {};
   showAddRow: boolean = false;
 
-  constructor(private itineraryService: ItineraryService, 
-              private confirmDeleteRowDialog: MatDialog,
-              private confirmResetDialog: MatDialog,
-              private dialog: MatDialog) {
-    this.itinerary = this.itineraryService.getRows();
-  }
+  constructor(
+    private itineraryService: ItineraryService,
+    private confirmDeleteRowDialog: MatDialog,
+    private confirmResetDialog: MatDialog,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
-    this.refreshItinerary();
-  }
+    // First, call async method to insert missing defaults
+    this.itineraryService.loadDefaults().then(() => {
+      // Then subscribe to Firestore updates
+      this.itineraryService.getRows().subscribe(rows => {
+        this.itinerary = rows;
+        this.showAddRow = false;
+      });
+    });
+  }  
 
   getUpcomingFriday(): Date {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
-    const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7; // default to next Friday even if today is Friday
+    const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7; // next Friday even if today is Friday
     const nextFriday = new Date(today);
     nextFriday.setDate(today.getDate() + daysUntilFriday);
     return nextFriday;
@@ -48,36 +50,34 @@ export class ItineraryComponent implements OnInit {
   }
 
   showError(message: string) {
-    this.dialog.open(ErrorDialogComponent, {
-      data: { message },
-    });
+    this.dialog.open(ErrorDialogComponent, { data: { message } });
   }
 
-  startEditing(index: number, field: keyof ItineraryRow) {
-    this.editingField[index] = { ...this.editingField[index], [field]: true };
+  startEditing(id: string, field: keyof ItineraryRow) {
+    this.editingField[id] = { ...this.editingField[id], [field]: true };
   }
 
-  stopEditing(index: number, field: keyof ItineraryRow, row: ItineraryRow) {
-    this.editingField[index][field] = false;
-    this.updateRow(index, row);
+  async stopEditing(id: string, field: keyof ItineraryRow, row: ItineraryRow) {
+    this.editingField[id][field] = false;
+    if (row.id) {
+      await this.itineraryService.updateRow(row.id, row);
+    } else {
+      this.showError('Unable to update: missing row ID');
+    }
   }
 
-  handleResetItineraryClick() {
+  async handleResetItineraryClick() {
     const dialogRef = this.confirmResetDialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Please confirm',
-        message: `Are you sure you want to reset the itinerary?`
-      }
+      data: { title: 'Please confirm', message: `Are you sure you want to reset the itinerary?` }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.resetItinerary();
-      }
-    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (result === true) {
+      await this.resetItinerary();
+    }
   }
 
-  handleAddRowClick() {
+  async handleAddRowClick() {
     if (this.itinerary.length >= 6) {
       this.showError('Maximum of 6 rows allowed.');
       return;
@@ -85,15 +85,14 @@ export class ItineraryComponent implements OnInit {
     this.showAddRow = true;
   }
 
-  addRow(row: ItineraryRow) {
+  async addRow(row: ItineraryRow) {
     if (!row.time && !row.activity && !row.location) {
       this.showAddRow = false;
       return;
     }
 
-    const added = this.itineraryService.addRow(row);
+    const added = await this.itineraryService.addRow(row);
     if (added) {
-      this.refreshItinerary();
       this.newRow = { time: '', activity: '', location: '' };
       this.showAddRow = false;
     } else {
@@ -101,12 +100,7 @@ export class ItineraryComponent implements OnInit {
     }
   }
 
-  updateRow(index: number, row: ItineraryRow) {
-    this.itineraryService.updateRow(index, row);
-    this.refreshItinerary();
-  }
-
-  confirmDelete(index: number) {
+  async confirmDelete(id: string) {
     const dialogRef = this.confirmDeleteRowDialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Please confirm',
@@ -114,33 +108,24 @@ export class ItineraryComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.deleteRow(index);
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (result === true) {
+      // Find the row by id in the itinerary array
+      const row = this.itinerary.find(r => r.id === id);
+      if (row?.id) {
+        await this.itineraryService.deleteRow(row.id);
+      } else {
+        this.showError('Unable to delete: missing row ID');
       }
-    });
-  }
-
-  deleteRow(index: number) {
-    this.itineraryService.deleteRow(index);
-    this.refreshItinerary();
+    }
   }
 
   cancelAddRow() {
     this.showAddRow = false;
-    return;
   }
 
-  resetItinerary() {
-    this.itineraryService.reset();
-    this.refreshItinerary();
+  async resetItinerary() {
+    await this.itineraryService.reset();
     this.showAddRow = false;
   }
-
-  private refreshItinerary(): void {
-    this.itinerary = this.itineraryService.getRows();
-    this.showAddRow = false;
-    // this.showAddRow = this.itinerary.length < 6;
-  }
-
 }

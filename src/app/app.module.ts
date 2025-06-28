@@ -13,6 +13,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 import { ErrorDialogComponent } from './shared/error-dialog/error-dialog.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { environment } from '../environments/environment';
+
 
 @NgModule({
   declarations: [
@@ -31,7 +35,9 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
     FormsModule,
     MatDialogModule,
     AppRoutingModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    provideFirestore(() => getFirestore()),
   ],
   providers: [],
   bootstrap: [AppComponent]

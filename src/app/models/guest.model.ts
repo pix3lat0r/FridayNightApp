@@ -1,5 +1,5 @@
 export interface Guest {
-    id: number;
+    id?: string;
     name: string;
     rsvp: 'yes' | 'no' | 'maybe';
 }

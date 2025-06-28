@@ -12,63 +12,51 @@ import { GuestService } from 'src/app/core/services/guest.service';
 })
 export class RsvpComponent implements OnInit{
   newGuestName = '';
-
   guests: Guest[] = [];
 
   constructor(
     public guestService: GuestService,
-    public confirmRemoveGuestDialog: MatDialog,
+    public dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
-      this.guests = this.guestService.getGuests();
+    this.guestService.getGuests().subscribe(guests => {
+      this.guests = guests.sort((a, b) => Number(a.id) - Number(b.id));
+    });
   }
 
-  addGuest(name: string) {
+  async addGuest(name: string) {
     const trimmedName = name.trim();
     if (trimmedName) {
-      const added = this.guestService.addGuest(trimmedName);
+      const added = await this.guestService.addGuest(trimmedName);
 
       if (!added) {
-        this.confirmRemoveGuestDialog.open(ErrorDialogComponent, {
+        this.dialog.open(ErrorDialogComponent, {
           data: { message: `${trimmedName} is already on the guest list.` }
         });
         return;
       }
 
-      this.guests = this.guestService.getGuests();
+      this.newGuestName = '';  // Clear input only after successful add
     }
   }
 
   confirmDelete(guest: Guest): void {
-    const dialogRef = this.confirmRemoveGuestDialog.open(ConfirmDialogComponent, {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Please confirm',
         message: `Are you sure you want to remove ${guest.name}?`
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.guestService.deleteGuest(guest.id);
-        this.guests = this.guestService.getGuests();
+    dialogRef.afterClosed().subscribe(async result => {
+      if (result === true && guest.id) {
+        await this.guestService.deleteGuest(guest.id);
       }
     });
   }
 
-  // deleteGuest(id: number, name: string) {
-  //   const confirmed = confirm(`Are you sure you want to remove ${name}?`)
-  //   if (confirmed) {
-  //     this.guestService.deleteGuest(id);
-  //     this.guests = this.guestService.getGuests();
-  //   }
-  // }
-
-  onRsvpChange(guestId: number, newRsvp: string) {
+  onRsvpChange(guestId: string, newRsvp: string) {
     this.guestService.updateGuestRsvp(guestId, newRsvp as 'yes' | 'no' | 'maybe');
-  }
-
-  updateGuestRsvp(id: number, rsvp: 'yes' | 'no' | 'maybe') {
-    this.guestService.updateGuestRsvp(id, rsvp);
   }
 }

@@ -1,7 +1,7 @@
 <h2 class="section-title">who's coming?</h2>
 <div class="add-guest">
     <input type="text" [(ngModel)]="newGuestName" placeholder="Add someone" />
-    <button (click)="addGuest(newGuestName); newGuestName=''">
+    <button (click)="addGuest(newGuestName)">
         <span class="material-symbols-outlined">
             person_add</span></button>
 </div>
@@ -24,7 +24,7 @@
             <td>
                 <select [(ngModel)]="guest.rsvp" 
                         [ngClass]="'rsvp-select ' + guest.rsvp" 
-                        (change)="guestService.updateGuestRsvp(guest.id, guest.rsvp)">
+                        (change)="guest.id && guestService.updateGuestRsvp(guest.id, guest.rsvp)">
                     <option value="yes">yes</option>
                     <option value="no">no</option>
                     <option value="maybe">maybe</option>
